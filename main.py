@@ -1,5 +1,6 @@
 import gym
 import numpy as np
+import matplotlib.pyplot as plt
 
 
 def softmax(v):
@@ -34,13 +35,14 @@ def run_episode(env, get_action, render=False):
 
 
 def main():
-	epochs = 100
+	epochs = 2000
 	batch_size = 100
 	noise_scaling = 100
 
 	env = gym.make('MountainCar-v0')
+	memo = []
 
-	w = np.zeros([2, 3])  # weights initialization
+	w = np.zeros([2, 3], dtype=np.float64)  # weights initialization
 	for i in range(epochs):
 		parameters = []
 		rewards = []
@@ -50,11 +52,17 @@ def main():
 			rewards.append(run_episode(env, lambda state: sample(policy_fn(state, w_noisy))))
 
 		rewards = np.array(rewards, dtype=float) + 200.
-		print('Timestep #{}:\t avg = {}\tmax = {}'.format(i+1, sum(rewards)/len(rewards), max(rewards)))
 		rewards_norm = (rewards/sum(rewards))[:, np.newaxis, np.newaxis]
 		w = np.sum(parameters * rewards_norm, axis=0)
 
+		avg_reward = sum(rewards)/len(rewards)
+		memo.append(avg_reward)
+		if i % 100 == 0:
+			print('Timestep #{}:\t avg = {} \tmax = {}'.format(i, avg_reward, max(rewards)))
+
 	env.close()
+	plt.plot(memo)
+	plt.show()
 
 
 if __name__ == '__main__':
