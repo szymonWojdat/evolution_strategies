@@ -35,7 +35,7 @@ def run_episode(env, get_action, render=False):
 
 
 def main():
-	epochs = 2000
+	epochs = 5000
 	batch_size = 100
 	noise_scaling = 100
 
@@ -52,9 +52,11 @@ def main():
 			rewards.append(run_episode(env, lambda state: sample(policy_fn(state, w_noisy))))
 
 		rewards = np.array(rewards, dtype=float) + 200.
-		rewards_norm = (rewards/sum(rewards))[:, np.newaxis, np.newaxis]
+		rewards_norm = (rewards/np.sum(rewards))[:, np.newaxis, np.newaxis]
 		w = np.sum(parameters * rewards_norm, axis=0)
 
+		# todo - report only average reward over the last 10 episodes
+		# todo - noise scaling decay over time
 		avg_reward = sum(rewards)/len(rewards)
 		memo.append(avg_reward)
 		if i % 100 == 0:
@@ -62,6 +64,7 @@ def main():
 
 	env.close()
 	plt.plot(memo)
+	plt.savefig('graphs/es_avg_score_progression.png')
 	plt.show()
 
 
