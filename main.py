@@ -44,6 +44,9 @@ def main():
 
 	w = np.zeros([2, 3], dtype=np.float64)  # weights initialization
 	for i in range(epochs):
+		# noise_scaling = max((1, 100 - (i//10)))  # noise scaling linear decay
+		if i % 10 == 0 and not i == 0:
+			noise_scaling = noise_scaling * 0.9  # noise scaling exponential decay
 		parameters = []
 		rewards = []
 		for _ in range(batch_size):
@@ -55,16 +58,14 @@ def main():
 		rewards_norm = (rewards/np.sum(rewards))[:, np.newaxis, np.newaxis]
 		w = np.sum(parameters * rewards_norm, axis=0)
 
-		# todo - report only average reward over the last 10 episodes
-		# todo - noise scaling decay over time
 		avg_reward = sum(rewards)/len(rewards)
 		memo.append(avg_reward)
-		if i % 100 == 0:
+		if i % 100 == 0 or i in range(10):  # always prints first 10 rewards - for debugging 0 rewards
 			print('Timestep #{}:\t avg = {} \tmax = {}'.format(i, avg_reward, max(rewards)))
 
 	env.close()
 	plt.plot(memo)
-	plt.savefig('graphs/es_avg_score_progression.png')
+	plt.savefig('graphs/avg_score.png')
 	plt.show()
 
 
